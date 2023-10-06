@@ -8,11 +8,13 @@
     "test": "vitest",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "start": "tsc && vite build && electron-forge start",
+    "start": "tsc && vite build && electron-forge start &",
     "package": "tsc && vite build && electron-forge package",
-    "make": "tsc && vite build && electron-forge make"
+    "make": "tsc && vite build && electron-forge make",
+    "cypress:open": "cypress open"
   },
   "dependencies": {
+    "cypress": "^13.3.0",
     "electron-squirrel-startup": "^1.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
