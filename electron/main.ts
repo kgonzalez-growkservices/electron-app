@@ -18,6 +18,7 @@ process.env.VITE_PUBLIC = app.isPackaged
 
 let win: BrowserWindow | null;
 let child: child_process.ChildProcessWithoutNullStreams;
+let hasBackendStarted: boolean = false;
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 
@@ -31,29 +32,35 @@ function createWindow() {
 
   // Test active push message to Renderer-process.
   win.webContents.on("did-finish-load", () => {
-    win?.webContents.send("main-process-message", new Date().toLocaleString());
+    win?.webContents.send(
+      "main-process-message",
+      new Date().toLocaleString(),
+      hasBackendStarted
+    );
+    if (hasBackendStarted) {
+      win?.webContents.send("backend-started");
+    }
   });
 
+  createServer().then((isBackendUp: boolean) => {
+    hasBackendStarted = isBackendUp;
+  });
   if (VITE_DEV_SERVER_URL) {
-    createServer();
     win?.loadURL(VITE_DEV_SERVER_URL);
   } else {
     // win.loadFile('dist/index.html')
-    createServer();
     win?.loadFile(path.join(process.env.DIST, "index.html"));
   }
 }
 
-function createServer() {
-  return new Promise<void>(async (res, _rej) => {
-    if (VITE_DEV_SERVER_URL) {
+function createServer(): Promise<boolean> {
+  return new Promise<boolean>(async (res, _rej) => {
+    if (VITE_DEV_SERVER_URL || app.isPackaged != true) {
       const jarPath = path.join(
         __dirname,
         "..",
         "spring-boot-0.0.1-SNAPSHOT.jar"
       );
-      console.log(jarPath);
-
       child = child_process.spawn("java", ["-jar", jarPath, ""]);
       child.stdout.on("data", (data) => {
         console.log(data.toString());
@@ -76,12 +83,14 @@ function createServer() {
         .catch((_err: unknown) => undefined);
       if (data?.status === "UP") {
         win?.webContents.send("backend-started");
-        return res();
+        res(true);
+        return;
       }
       await new Promise((delayRes) => setTimeout(delayRes, msPerRetry));
     }
     win?.webContents.send("backend-start-error");
-    return res();
+    res(false);
+    return;
   });
 }
 
