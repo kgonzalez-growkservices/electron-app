@@ -14,7 +14,7 @@ import {
   ipcRendererInvoke,
 } from "electron-playwright-helpers";
 
-test.describe("Testing example", () => {
+test.describe("E2E Testing example", () => {
   let electronApp: ElectronApplication;
 
   test.beforeAll(async () => {
@@ -28,7 +28,7 @@ test.describe("Testing example", () => {
       args: [appInfo.main],
       executablePath: appInfo.executable,
       recordVideo: {
-        dir: "videos/",
+        dir: "test-results/videos/",
       },
     });
     electronApp.on("window", async (page) => {
@@ -46,22 +46,22 @@ test.describe("Testing example", () => {
   });
 
   test.afterAll(async () => {
-    await new Promise((res) => setTimeout(res, 1000));
     await electronApp.close();
   });
 
-  test("a", async () => {
+  test("clicking button increases state", async () => {
     // Get the first window that the app opens, wait if necessary.
     const window = await electronApp.firstWindow();
     // Print the title.
     console.log(await window.title());
     // Capture a screenshot.
-    await window.screenshot({ path: "intro.png" });
+    await window.screenshot({ path: "test-results/screenshots/intro.png" });
     // Direct Electron console to Node terminal.
     window.on("console", console.log);
     // Click button.
     await window.click("text=count is 0");
     await expect(window.locator("text=count is 1")).toBeVisible();
+    await new Promise((res) => setTimeout(res, 100));
     await window.close();
   });
 });

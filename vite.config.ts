@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
 /// <reference types="vite/client" />
 
-import { defineConfig } from "vite";
+import { configDefaults, defineConfig } from "vitest/config";
 import path from "node:path";
 import electron from "vite-plugin-electron/simple";
 import react from "@vitejs/plugin-react";
@@ -30,5 +30,6 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     mockReset: true,
+    exclude: [...configDefaults.exclude, "e2e-tests"],
   },
 });

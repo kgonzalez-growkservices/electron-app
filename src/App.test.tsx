@@ -2,6 +2,13 @@ import { render, screen } from "./utils/test-utils";
 import App from "./App";
 import { Mock, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("./hooks/storeHooks", () => {
+  return {
+    useAppDispatch: vi.fn(),
+    useAppSelector: vi.fn(),
+  };
+});
+
 describe("Input", async () => {
   beforeEach(() => {
     global.fetch = vi.fn(() =>
